@@ -1,7 +1,7 @@
 from typing import Optional
 
 from sqlalchemy import ForeignKey, Text
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from datetime import datetime, date
 from decimal import Decimal
 
@@ -16,6 +16,9 @@ class Role(Base):
     id: Mapped[Optional[int]] = mapped_column(primary_key=True)
     nom: Mapped[str]
 
+    # Relations
+    collaborateurs: Mapped[list["Collaborateur"]] = relationship(back_populates="role")
+
 
 class Collaborateur(Base):
     __tablename__ = "collaborateurs"
@@ -26,6 +29,11 @@ class Collaborateur(Base):
     email: Mapped[str]
     mot_de_passe: Mapped[str]
     role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"))
+
+    # Relations
+    role: Mapped[Role] = relationship(back_populates="collaborateurs")
+    clients: Mapped[list["Client"]] = relationship(back_populates="commercial")
+    evenements: Mapped[list["Evenement"]] = relationship(back_populates="support")
 
 
 class Client(Base):
@@ -40,6 +48,10 @@ class Client(Base):
     date_maj: Mapped[date]
     commercial_id: Mapped[int] = mapped_column(ForeignKey("collaborateurs.id"))
 
+    # Relations
+    commercial: Mapped[Collaborateur] = relationship(back_populates="clients")
+    contrats: Mapped[list["Contrat"]] = relationship(back_populates="client")
+
 
 class Contrat(Base):
     __tablename__ = "contrats"
@@ -50,6 +62,10 @@ class Contrat(Base):
     date: Mapped[date]
     statut: Mapped[bool]
     client_id: Mapped[int] = mapped_column(ForeignKey("clients.id"))
+
+    # Relations
+    client: Mapped[Client] = relationship(back_populates="contrats")
+    evenement: Mapped[Optional["Evenement"]] = relationship(back_populates="contrat", uselist=False)
 
 
 class Evenement(Base):
@@ -63,3 +79,7 @@ class Evenement(Base):
     notes: Mapped[Optional[str]] = mapped_column(Text)
     contrat_id: Mapped[int] = mapped_column(ForeignKey("contrats.id"), unique=True)
     support_id: Mapped[Optional[int]] = mapped_column(ForeignKey("collaborateurs.id"))
+
+    # Relations
+    contrat: Mapped[Contrat] = relationship(back_populates="evenement")
+    support: Mapped[Collaborateur] = relationship(back_populates="evenements")

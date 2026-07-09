@@ -1,7 +1,7 @@
 from typing import Generic, TypeVar, Type, Optional
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from epicevents.models import Base, Collaborateur, Client, Contrat, Evenement
+from epicevents.models import Base, Role, Collaborateur, Client, Contrat, Evenement
 
 ModelType = TypeVar("ModelType", bound=Base)
 
@@ -35,8 +35,18 @@ class BaseDAO(Generic[ModelType]):
         self.session.commit()
 
 
+class RoleDAO(BaseDAO[Role]):
+    model = Role
+
+    def get_by_nom(self, nom: str) -> Optional[Role]:
+        return self.session.scalars(select(Role).where(Role.nom == nom)).first()
+
+
 class CollaborateurDAO(BaseDAO[Collaborateur]):
     model = Collaborateur
+
+    def get_by_email(self, email: str) -> Optional[Collaborateur]:
+        return self.session.scalars(select(Collaborateur).where(Collaborateur.email == email)).first()
 
 
 class ClientDAO(BaseDAO[Client]):
@@ -46,6 +56,26 @@ class ClientDAO(BaseDAO[Client]):
 class ContratDAO(BaseDAO[Contrat]):
     model = Contrat
 
+    def list_unsigned(self) -> list[Contrat]:
+        return self.session.scalars(
+            select(Contrat).where(Contrat.statut.is_(False))
+        ).all()
+
+    def list_unpaid(self) -> list[Contrat]:
+        return self.session.scalars(
+            select(Contrat).where(Contrat.montant_restant > 0)
+        ).all()
+
 
 class EvenementDAO(BaseDAO[Evenement]):
     model = Evenement
+
+    def list_without_support(self) -> list[Evenement]:
+        return self.session.scalars(
+            select(Evenement).where(Evenement.support_id.is_(None))
+        ).all()
+
+    def list_by_support(self, support_id: int) -> list[Evenement]:
+        return self.session.scalars(
+            select(Evenement).where(Evenement.support_id == support_id)
+        ).all()
