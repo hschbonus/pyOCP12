@@ -9,3 +9,5 @@ mission/
 claude.md
 backlog.md
 _template_*.py
+postgres-superuser-reset.md
+outils*
