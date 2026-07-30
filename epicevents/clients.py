@@ -25,7 +25,7 @@ def create_client(session, nom, email, telephone, nom_entreprise):
         nom_entreprise=nom_entreprise,
         date_creation=date.today(),
         date_maj=date.today(),
-        commercial_id=current_user.id
+        commercial_id=current_user.id,
     )
     return new_client
 
@@ -33,6 +33,9 @@ def create_client(session, nom, email, telephone, nom_entreprise):
 def update_client(session, instance, **kwargs):
     current_user = get_current_user(session)
     require_role(current_user, "commercial")
+    validate_not_empty(kwargs.get("nom"), "nom")
+    validate_not_empty(kwargs.get("nom_entreprise"), "nom_entreprise")
+    validate_email(kwargs.get("email"))
 
     client = ClientDAO(session).get_by_id(instance.id)
 

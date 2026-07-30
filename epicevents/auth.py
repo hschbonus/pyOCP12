@@ -24,10 +24,7 @@ def authenticate(session, email: str, mot_de_passe: str) -> Collaborateur:
 
 
 def generate_auth_token(collaborateur: Collaborateur) -> str:
-    payload = {
-        "id": collaborateur.id,
-        "exp": int((datetime.now(timezone.utc) + timedelta(hours=24)).timestamp())
-    }
+    payload = {"id": collaborateur.id, "exp": int((datetime.now(timezone.utc) + timedelta(hours=24)).timestamp())}
     token = jwt.encode(payload, os.environ["JWT_SECRET"], algorithm="HS256")
     return token
 

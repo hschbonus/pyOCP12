@@ -11,3 +11,6 @@ backlog.md
 _template_*.py
 postgres-superuser-reset.md
 outils*
+.pytest_cache/
+.coverage
+htmlcov/

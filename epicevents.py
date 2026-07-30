@@ -1,6 +1,9 @@
+import os
+import sys
 from datetime import datetime
 from typing import Optional
 
+import sentry_sdk
 import typer
 from sqlalchemy.orm import Session
 
@@ -25,6 +28,8 @@ from epicevents.evenements import (
     update_event,
 )
 from epicevents.collaborateurs import create_collaborateur, update_collaborateur
+
+sentry_sdk.init(dsn=os.environ["SENTRY_DSN"], send_default_pii=False)
 
 session = Session(engine)
 app = typer.Typer()
@@ -59,6 +64,7 @@ def logout():
 
 # --- Clients ---
 
+
 @app.command("list-clients")
 def cmd_list_clients():
     """
@@ -77,12 +83,7 @@ def cmd_list_clients():
 
 
 @app.command("create-client")
-def cmd_create_client(
-    nom: str,
-    email: str,
-    telephone: str,
-    nom_entreprise: str
-):
+def cmd_create_client(nom: str, email: str, telephone: str, nom_entreprise: str):
     """
     Crée un client (commercial uniquement, auto-association).
     """
@@ -128,10 +129,10 @@ def cmd_update_client(
         nouv_nom_entreprise = nom_entreprise if nom_entreprise is not None else client_instance.nom_entreprise
 
         kwargs = {
-            'nom': nouv_nom,
-            'email': nouv_email,
-            'telephone': nouv_telephone,
-            'nom_entreprise': nouv_nom_entreprise,
+            "nom": nouv_nom,
+            "email": nouv_email,
+            "telephone": nouv_telephone,
+            "nom_entreprise": nouv_nom_entreprise,
         }
 
         update_client(session, client_instance, **kwargs)
@@ -148,6 +149,7 @@ def cmd_update_client(
 
 
 # --- Contrats ---
+
 
 @app.command("list-contracts")
 def cmd_list_contracts():
@@ -246,9 +248,9 @@ def cmd_update_contract(
         nouv_statut = statut if statut is not None else contract_instance.statut
 
         kwargs = {
-            'montant': nouv_montant,
-            'montant_restant': nouv_montant_restant,
-            'statut': nouv_statut,
+            "montant": nouv_montant,
+            "montant_restant": nouv_montant_restant,
+            "statut": nouv_statut,
         }
 
         updated_contract = update_contract(session, contract_instance, **kwargs)
@@ -269,6 +271,7 @@ def cmd_update_contract(
 
 
 # --- Événements ---
+
 
 @app.command("list-events")
 def cmd_list_events():
@@ -321,8 +324,8 @@ def cmd_create_event(
     date_fin: datetime,
     location: str,
     attendees: int,
+    contrat_id: int,
     notes: Optional[str] = None,
-    contrat_id: int = None
 ):
     """
     Crée un événement (commercial, si le contrat est signé).
@@ -392,11 +395,11 @@ def cmd_update_event(
         nouv_notes = notes if notes is not None else event_instance.notes
 
         kwargs = {
-            'date_debut': nouv_date_debut,
-            'date_fin': nouv_date_fin,
-            'location': nouv_location,
-            'attendees': nouv_attendees,
-            'notes': nouv_notes,
+            "date_debut": nouv_date_debut,
+            "date_fin": nouv_date_fin,
+            "location": nouv_location,
+            "attendees": nouv_attendees,
+            "notes": nouv_notes,
         }
 
         update_event(session, event_instance, **kwargs)
@@ -414,6 +417,7 @@ def cmd_update_event(
 
 
 # --- Collaborateurs ---
+
 
 @app.command("create-collaborateur")
 def cmd_create_collaborateur(
@@ -439,8 +443,7 @@ def cmd_create_collaborateur(
         raise typer.Exit(code=1)
 
     typer.echo(
-        f"Collaborateur créé avec succès. ID: {new_collab.id}, Nom: {new_collab.nom}, "
-        f"Email: {new_collab.email}"
+        f"Collaborateur créé avec succès. ID: {new_collab.id}, Nom: {new_collab.nom}, " f"Email: {new_collab.email}"
     )
 
 
@@ -470,9 +473,9 @@ def cmd_update_collaborateur(
         nouv_role_id = role_id if role_id is not None else collaborateur_instance.role_id
 
         kwargs = {
-            'nom': nouv_nom,
-            'email': nouv_email,
-            'role_id': nouv_role_id,
+            "nom": nouv_nom,
+            "email": nouv_email,
+            "role_id": nouv_role_id,
         }
 
         updated_collab = update_collaborateur(session, collaborateur_instance, **kwargs)
@@ -493,4 +496,10 @@ def cmd_update_collaborateur(
 
 
 if __name__ == "__main__":
-    app()
+    try:
+        exit_code = app(standalone_mode=False)
+    except Exception as e:
+        sentry_sdk.capture_exception(e)
+        sentry_sdk.flush(timeout=3)
+        raise
+    sys.exit(exit_code or 0)

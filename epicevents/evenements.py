@@ -43,7 +43,7 @@ def create_event(session, date_debut, date_fin, location, attendees, notes, cont
         attendees=attendees,
         notes=notes,
         contrat_id=contrat_id,
-        support_id=None
+        support_id=None,
     )
     return new_event
 
@@ -70,6 +70,9 @@ def assign_support(session, event_id, support_id):
 def update_event(session, instance, **kwargs):
     current_user = get_current_user(session)
     require_role(current_user, "support")
+    validate_not_empty(kwargs.get("location"), "location")
+    validate_positive(kwargs.get("attendees"), "attendees")
+    validate_dates_order(kwargs.get("date_debut"), kwargs.get("date_fin"))
 
     event = EvenementDAO(session).get_by_id(instance.id)
     if not event:

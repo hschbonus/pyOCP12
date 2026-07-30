@@ -57,25 +57,17 @@ class ContratDAO(BaseDAO[Contrat]):
     model = Contrat
 
     def list_unsigned(self) -> list[Contrat]:
-        return self.session.scalars(
-            select(Contrat).where(Contrat.statut.is_(False))
-        ).all()
+        return self.session.scalars(select(Contrat).where(Contrat.statut.is_(False))).all()
 
     def list_unpaid(self) -> list[Contrat]:
-        return self.session.scalars(
-            select(Contrat).where(Contrat.montant_restant > 0)
-        ).all()
+        return self.session.scalars(select(Contrat).where(Contrat.montant_restant > 0)).all()
 
 
 class EvenementDAO(BaseDAO[Evenement]):
     model = Evenement
 
     def list_without_support(self) -> list[Evenement]:
-        return self.session.scalars(
-            select(Evenement).where(Evenement.support_id.is_(None))
-        ).all()
+        return self.session.scalars(select(Evenement).where(Evenement.support_id.is_(None))).all()
 
     def list_by_support(self, support_id: int) -> list[Evenement]:
-        return self.session.scalars(
-            select(Evenement).where(Evenement.support_id == support_id)
-        ).all()
+        return self.session.scalars(select(Evenement).where(Evenement.support_id == support_id)).all()
