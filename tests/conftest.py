@@ -19,6 +19,8 @@ def session():
     with SQLAlchemySession(engine) as db_session:
         yield db_session
 
+    engine.dispose()
+
 
 @pytest.fixture
 def set_current_user(monkeypatch):

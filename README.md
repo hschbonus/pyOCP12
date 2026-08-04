@@ -16,7 +16,7 @@ Application en ligne de commande (CLI) permettant à Epic Events de gérer de ma
 
 - Python 3.11 ou supérieur
 - PostgreSQL installé et accessible en local (ou distant)
-- Un compte Sentry (gratuit) avec un projet Python dédié, pour la journalisation
+- *(optionnel)* Un compte Sentry (gratuit) avec un projet Python dédié, pour la journalisation — l'application fonctionne normalement sans, la journalisation Sentry est simplement désactivée
 
 ## Installation
 
@@ -60,12 +60,12 @@ JWT_SECRET=une_valeur_aleatoire_longue_et_secrete
 SENTRY_DSN=https://xxxxx@xxxxx.ingest.sentry.io/xxxxx
 ```
 
-`JWT_SECRET` peut être généré avec :
+`DATABASE_URL` et `JWT_SECRET` sont obligatoires. `JWT_SECRET` peut être généré avec :
 ```bash
 python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
-`SENTRY_DSN` est fourni par Sentry à la création d'un projet (plateforme **Python**).
+`SENTRY_DSN` est **optionnel** : fourni par Sentry à la création d'un projet (plateforme **Python**) si vous voulez activer la journalisation. En son absence, l'application fonctionne normalement, elle n'envoie simplement rien à Sentry.
 
 ### 5. Créer les tables
 

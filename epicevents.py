@@ -29,7 +29,7 @@ from epicevents.evenements import (
 )
 from epicevents.collaborateurs import create_collaborateur, update_collaborateur
 
-sentry_sdk.init(dsn=os.environ["SENTRY_DSN"], send_default_pii=False)
+sentry_sdk.init(dsn=os.environ.get("SENTRY_DSN"), send_default_pii=False)
 
 session = Session(engine)
 app = typer.Typer()
