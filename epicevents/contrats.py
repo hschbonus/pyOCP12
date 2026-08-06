@@ -3,7 +3,7 @@ from datetime import date
 import sentry_sdk
 
 from epicevents.auth import get_current_user
-from epicevents.dao import ContratDAO
+from epicevents.dao import ClientDAO, ContratDAO
 from epicevents.permissions import AuthorizationError, require_role
 from epicevents.validation import validate_positive
 
@@ -26,6 +26,9 @@ def list_unpaid_contracts(session):
 def create_contract(session, montant, client_id):
     require_role(get_current_user(session), "gestion")
     validate_positive(montant, "montant")
+
+    if not ClientDAO(session).get_by_id(client_id):
+        raise ValueError(f"Client avec l'id {client_id} introuvable.")
 
     new_contract = ContratDAO(session).create(
         montant=montant, montant_restant=montant, date=date.today(), statut=False, client_id=client_id

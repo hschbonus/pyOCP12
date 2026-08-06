@@ -26,7 +26,7 @@ class Collaborateur(Base):
     id: Mapped[Optional[int]] = mapped_column(primary_key=True)
     numero_employe: Mapped[str] = mapped_column(unique=True)
     nom: Mapped[str]
-    email: Mapped[str]
+    email: Mapped[str] = mapped_column(unique=True)
     mot_de_passe: Mapped[str]
     role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"))
 
