@@ -27,7 +27,7 @@ from epicevents.evenements import (
     assign_support,
     update_event,
 )
-from epicevents.collaborateurs import create_collaborateur, update_collaborateur
+from epicevents.collaborateurs import create_collaborateur, update_collaborateur, delete_collaborateur
 
 sentry_sdk.init(dsn=os.environ.get("SENTRY_DSN"), send_default_pii=False)
 
@@ -493,6 +493,31 @@ def cmd_update_collaborateur(
         f"Collaborateur mis à jour avec succès. ID: {updated_collab.id}, Nom: {updated_collab.nom}, "
         f"Email: {updated_collab.email}"
     )
+
+
+@app.command("delete-collaborateur")
+def cmd_delete_collaborateur(collaborateur_id: int):
+    """
+    Supprime un collaborateur (gestion uniquement).
+    """
+    try:
+        collaborateur_instance = session.query(CollaborateurDAO(session).model).get(collaborateur_id)
+        if not collaborateur_instance:
+            typer.echo(f"Collaborateur avec l'id {collaborateur_id} introuvable.")
+            raise typer.Exit(code=1)
+
+        delete_collaborateur(session, collaborateur_instance)
+    except AuthenticationError as e:
+        typer.echo(f"Erreur d'authentification: {e}")
+        raise typer.Exit(code=1)
+    except AuthorizationError as e:
+        typer.echo(f"Erreur d'autorisation: {e}")
+        raise typer.Exit(code=1)
+    except ValueError as e:
+        typer.echo(f"Erreur: {e}")
+        raise typer.Exit(code=1)
+
+    typer.echo(f"Collaborateur {collaborateur_id} supprimé avec succès.")
 
 
 if __name__ == "__main__":

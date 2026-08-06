@@ -1,6 +1,7 @@
 import sentry_sdk
+from sqlalchemy.exc import IntegrityError
 
-from epicevents.dao import CollaborateurDAO
+from epicevents.dao import CollaborateurDAO, EvenementDAO
 from epicevents.security import hash_password
 from epicevents.auth import get_current_user
 from epicevents.permissions import require_role
@@ -46,3 +47,28 @@ def update_collaborateur(session, instance, **kwargs):
     sentry_sdk.capture_message(message, level="info")
 
     return updated_collab
+
+
+def delete_collaborateur(session, instance):
+    require_role(get_current_user(session), "gestion")
+
+    collaborateur = CollaborateurDAO(session).get_by_id(instance.id)
+    if not collaborateur:
+        raise ValueError(f"Collaborateur avec l'id {instance.id} introuvable.")
+
+    if EvenementDAO(session).list_by_support(collaborateur.id):
+        raise ValueError(
+            "Impossible de supprimer ce collaborateur : il est encore assigné "
+            "à au moins un événement en tant que support."
+        )
+
+    try:
+        CollaborateurDAO(session).delete(collaborateur)
+    except IntegrityError:
+        session.rollback()
+        raise ValueError(
+            "Impossible de supprimer ce collaborateur : il est encore référencé "
+            "par au moins un client ou événement."
+        )
+
+    sentry_sdk.capture_message(f"Collaborateur supprimé. ID: {instance.id}", level="info")

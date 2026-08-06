@@ -14,3 +14,4 @@ outils*
 .pytest_cache/
 .coverage
 htmlcov/
+livrable/

@@ -103,7 +103,7 @@ Le mot de passe est demandé en saisie masquée. Un jeton d'authentification est
 | Clients | `list-clients`, `create-client`, `update-client` |
 | Contrats | `list-contracts`, `list-unsigned-contracts`, `list-unpaid-contracts`, `create-contract`, `update-contract` |
 | Événements | `list-events`, `list-events-without-support`, `list-my-events`, `create-event`, `assign-support`, `update-event` |
-| Collaborateurs | `create-collaborateur`, `update-collaborateur` |
+| Collaborateurs | `create-collaborateur`, `update-collaborateur`, `delete-collaborateur` |
 
 Les droits disponibles dépendent du département (rôle) du collaborateur connecté (commercial / support / gestion). Le détail de chaque commande est accessible via `python epicevents.py <commande> --help`.
 
